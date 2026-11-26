@@ -1,5 +1,5 @@
 // 受験70 service worker: 一度開けば、電波がなくても使えるようにする
-const VER = 'jk70-v2';
+const VER = 'jk70-v3';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/apple-touch-icon.png',
   'data/q_eng.json', 'data/q_math.json', 'data/q_sci.json', 'data/q_soc.json', 'data/q_his.json', 'data/q_jpn.json'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

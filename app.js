@@ -486,6 +486,7 @@ document.addEventListener('click', e => {
 
 /* ---------- 起動 ---------- */
 applySetupFromHash();
+window.addEventListener('hashchange', () => { applySetupFromHash(); render(); });
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 $('#btnSettings').onclick = openSettings;
 window.addEventListener('pagehide', save);
