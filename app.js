@@ -146,13 +146,13 @@ function latestDev() {
 }
 
 /* ---------- 画面: 共通 ---------- */
-const ui = { tab: 'home', sub: null, refSub: 'eng', era: 0 };
+const ui = { tab: 'home', sub: null, refSub: 'eng', era: 0, vsub: null };
 function setTab(t) { ui.tab = t; ui.sub = null; document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t)); render(); window.scrollTo(0, 0); }
 function render() {
   const v = $('#view'); const ex = parseDay(S.set.exam); const left = ex != null ? ex - dayNum() : null;
   $('#countdown').textContent = left != null ? (left >= 0 ? '入試まで' + left + '日' : '入試日を設定') : '入試日を設定';
   if (!QS.length) { v.innerHTML = '<div class="empty">読み込み中…</div>'; return; }
-  ({ home: vHome, learn: vLearn, mock: vMock, record: vRecord, ref: vRef })[ui.tab](v);
+  ({ home: vHome, learn: vLearn, video: vVideo, mock: vMock, record: vRecord, ref: vRef })[ui.tab](v);
 }
 const subTag = k => '<span class="tag sj s-' + k + '" style="--c:var(--' + k + ')">' + SUBJ[k].name + '</span>';
 
@@ -173,13 +173,17 @@ function vHome(v) {
     const sub = b.kind === 'mock' ? '本番と同じ形式（約' + (DB[b.sub].mocks[0] ? DB[b.sub].mocks[0].min : 50) + '分）' : (avail ? '約' + Math.min(avail, b.n) + '問' + (got ? '（今日 ' + got + '問 終了）' : '') : '今日は対象なし ✓');
     h += '<div class="block-item' + (d ? ' done' : '') + ' ' + (SUBJ[b.sub] ? 's-' + b.sub : '') + '" data-b="' + b.id + '"><div class="ic" style="background:' + (SUBJ[b.sub] ? 'var(--' + b.sub + ')' : 'var(--navy2)') + '">' + (d ? '✓' : icon) + '</div><div class="grow"><div class="ttl">' + esc(b.label) + '</div><div class="muted">' + b.mins + '分 ・ ' + sub + '</div></div><button class="btn sm ' + (d ? 'ghost' : 'acc') + '">' + (d ? 'もう一度' : 'はじめる') + '</button></div>';
   });
+  h += '<h2>🎬 動画授業（YouTube）</h2><div class="grid5 vq">';
+  ORDER.forEach(k => { h += '<div class="mini s-' + k + '" data-vid="' + k + '" style="--c:var(--' + k + ')"><b>' + SUBJ[k].name + '</b><span>▶</span></div>'; });
+  h += '</div><div class="muted small" style="margin:6px 2px 0">教科をおすと、その教科の動画授業の一覧が開きます</div>';
   h += '<h2>教科ごとの定着度</h2><div class="grid5">';
   ORDER.forEach(k => { const s = stats(k); h += '<div class="mini s-' + k + '" data-sub="' + k + '" style="--c:var(--' + k + ')"><b>' + SUBJ[k].name + '</b><span>' + s.mpct + '%</span></div>'; });
   h += '</div><div class="muted small" style="margin:6px 2px 0">定着＝「復習を3回以上くり返して、できた」問題の割合</div>';
   h += '<div style="margin-top:14px"><button class="btn ghost block" id="btnReport">📋 今日の報告をコピー（LINEにはりつけ）</button></div>';
   v.innerHTML = h;
   v.querySelectorAll('.block-item').forEach(el => el.onclick = () => startBlock(B.find(b => b.id === el.dataset.b)));
-  v.querySelectorAll('.mini').forEach(el => el.onclick = () => { setTab('learn'); ui.sub = el.dataset.sub; render(); });
+  v.querySelectorAll('.mini[data-sub]').forEach(el => el.onclick = () => { setTab('learn'); ui.sub = el.dataset.sub; render(); });
+  v.querySelectorAll('.mini[data-vid]').forEach(el => el.onclick = () => { ui.vsub = el.dataset.vid; setTab('video'); });
   $('#btnReport').onclick = copyReport;
   if ($('#goSetup')) $('#goSetup').onclick = openSettings;
   if ($('#hideInstall')) $('#hideInstall').onclick = () => { try { localStorage.setItem('jk70.hideInstall', '1'); } catch (x) { } render(); };
@@ -222,6 +226,7 @@ function vSubject(v, k) {
   const s = stats(k);
   let h = '<div class="row" style="margin:2px 0 10px"><button class="btn ghost sm" id="back">← もどる</button><h2 style="margin:0">' + SUBJ[k].name + '</h2></div>';
   h += '<div class="card s-' + k + '" style="--c:var(--' + k + ')"><div class="two"><button class="btn acc" id="goNew">今日の分を解く<br><small>約15問</small></button><button class="btn ghost" id="goWrong">間違いを直す<br><small>' + poolOf([k], { mock: true }).filter(q => (S.srs[q.id] || [])[5] === 1).length + '問</small></button></div><div class="muted small" style="margin-top:8px">定着 ' + s.mpct + '% ・ 復習待ち ' + countDue([k]) + '問</div></div>';
+  h += '<button class="btn ghost block" id="goVid" style="margin:-2px 0 12px">🎬 ' + SUBJ[k].name + 'の動画授業を見る</button>';
   h += '<h2>回ごとの練習</h2><div class="card list">';
   DB[k].units.forEach(u => {
     const ps = QS.filter(q => q.s === k && q.u === u.id && !q.mock); let seen = 0, mas = 0; ps.forEach(q => { const x = S.srs[q.id]; if (x) { seen++; if (x[0] >= 3) mas++; } });
@@ -230,6 +235,7 @@ function vSubject(v, k) {
   h += '</div>';
   v.innerHTML = h;
   $('#back').onclick = () => { ui.sub = null; render(); };
+  $('#goVid').onclick = () => { ui.vsub = k; setTab('video'); };
   $('#goNew').onclick = () => startSession(SUBJ[k].name + ' 今日の分', k, pick(poolOf([k], { deck: false }), 15), {});
   $('#goWrong').onclick = () => { const it = pick(poolOf([k], { mock: true }), 20, { wrong: true }); if (!it.length) return toast('間違いノートは空です 🎉'); startSession(SUBJ[k].name + ' 間違い直し', k, it, {}); };
   v.querySelectorAll('.item[data-u]').forEach(el => el.onclick = () => { const it = pick(poolOf([k], { unit: el.dataset.u, mock: false }).concat([]), 15); if (!it.length) return toast('この回は全部おわりました。復習で出てきます'); startSession(DB[k].units.find(u => u.id === el.dataset.u).title, k, it, {}); });
@@ -419,6 +425,28 @@ function vRecord(v) {
   $('#bkOut').onclick = () => { const blob = new Blob([JSON.stringify(S)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'juken70_backup_' + dayStr(t) + '.json'; a.click(); };
   $('#bkIn').onclick = () => $('#bkFile').click();
   $('#bkFile').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const s = JSON.parse(r.result); if (!s || s.v !== 1) throw 0; S = s; save(); toast('読み込みました'); render(); } catch (x) { toast('読み込めませんでした'); } }; r.readAsText(f); };
+}
+
+/* ---------- 動画授業 (YouTube『とある男が授業をしてみた』の再生リストへのリンク) ---------- */
+const plUrl = id => 'https://www.youtube.com/playlist?list=' + id;
+function openExternal(url) { const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; document.body.appendChild(a); a.click(); a.remove(); }
+function vVideo(v) {
+  if (typeof VIDEOS === 'undefined') { v.innerHTML = '<div class="empty">動画の一覧を読み込めませんでした。開き直してください。</div>'; return; }
+  const CH = VIDEOS.ch;
+  if (!ORDER.includes(ui.vsub)) ui.vsub = ROT[dow(dayNum())][0];
+  const k = ui.vsub;
+  let h = '<div class="card vch"><div class="muted small">YouTubeチャンネル</div><div class="vch-name">' + esc(CH.name) + '</div><div class="two" style="margin-top:8px"><a class="btn ghost sm" href="' + CH.url + '" target="_blank" rel="noopener noreferrer">チャンネルを開く</a><a class="btn ghost sm" href="' + CH.all + '" target="_blank" rel="noopener noreferrer">再生リストの一覧</a></div>';
+  h += '<form id="vsForm" class="vs"><input id="vsq" type="search" enterkeyhint="search" placeholder="単元で探す（例：相似）"><button class="btn sm" type="submit">探す</button></form></div>';
+  h += '<div class="seg">' + ORDER.map(s => '<button data-vs="' + s + '" class="' + (k === s ? 'on' : '') + '">' + SUBJ[s].name + '</button>').join('') + '</div>';
+  (VIDEOS.subj[k] || []).forEach(g => {
+    h += '<details class="card vgroup s-' + k + '" style="--c:var(--' + k + ')"' + (g.open ? ' open' : '') + '><summary>' + esc(g.title) + '</summary>' + (g.note ? '<div class="muted small" style="margin:4px 0 2px">' + esc(g.note) + '</div>' : '') + '<div class="list">';
+    g.items.forEach(it => { h += '<a class="item vrow" href="' + plUrl(it.id) + '" target="_blank" rel="noopener noreferrer"><span class="vplay">▶</span><div class="grow"><div class="vt">' + esc(it.t) + '</div><div class="muted small">全' + it.n + '本</div></div><span class="muted">見る ›</span></a>'; });
+    h += '</div></details>';
+  });
+  h += '<div class="muted small" style="margin:2px 2px 0">動画はYouTubeで開きます（通信が必要です）。見たあとは「学習」タブで同じ分野の問題を解くと、身につきます。</div>';
+  v.innerHTML = h;
+  v.querySelectorAll('.seg button').forEach(b => b.onclick = () => { ui.vsub = b.dataset.vs; render(); });
+  $('#vsForm').onsubmit = e => { e.preventDefault(); const q = $('#vsq').value.trim(); if (!q) return toast('探したい言葉を入れてください'); openExternal(CH.search + encodeURIComponent(q)); };
 }
 
 /* ---------- 参考書 ---------- */

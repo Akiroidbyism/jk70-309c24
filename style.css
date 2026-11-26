@@ -202,3 +202,16 @@ table.dlg2 td.sp{font-family:'Arial','BIZ UDGothic'; font-weight: bold; white-sp
 table.ex{border-collapse: collapse; width: 100%; margin: 3.6px 0 7.2px 0; font-size: 12.2px; }
 table.ex td{border-bottom: 0.6px dotted #aaa; padding: 2.5px 5.4px; vertical-align: top;}
 table.ex td.en{font-family:'Arial'; width: 55%;}
+/* 動画授業タブ */
+#tabs button{min-width:0;font-size:10.5px}
+.vch-name{font-size:17px;font-weight:800;color:var(--navy2);margin-top:2px}
+.vs{display:flex;gap:8px;margin-top:10px}
+.vs input{flex:1;min-width:0}
+.vs .btn{white-space:nowrap}
+a.btn{text-decoration:none}
+.vgroup summary{font-size:15px}
+a.item.vrow{color:inherit;text-decoration:none;-webkit-tap-highlight-color:rgba(0,0,0,.06)}
+.vplay{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--c,var(--navy2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;padding-left:2px}
+.vt{font-weight:800;line-height:1.35}
+.vq .mini{cursor:pointer}
+.vq .mini span{color:var(--c)}
