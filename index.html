@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#14284b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="受験70">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+<title>受験70｜高校入試 毎日学習</title>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="brand"><span class="logo">70</span><span class="bt">受験70</span></div>
+    <div class="top-right"><span id="countdown" class="chip"></span><button id="btnSettings" class="icon-btn" aria-label="設定">⚙</button></div>
+  </header>
+  <main id="view"></main>
+  <nav id="tabs">
+    <button data-tab="home" class="on"><i>🏠</i><span>ホーム</span></button>
+    <button data-tab="learn"><i>📚</i><span>学習</span></button>
+    <button data-tab="mock"><i>📝</i><span>模試</span></button>
+    <button data-tab="record"><i>📈</i><span>記録</span></button>
+    <button data-tab="ref"><i>📖</i><span>参考書</span></button>
+  </nav>
+</div>
+<div id="overlay" hidden></div>
+<div id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
